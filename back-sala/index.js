@@ -1,161 +1,320 @@
-// Importa o framework Express para criar o servidor web
-const express = require('express');
-// Importa o cliente do Prisma para conectar com o banco de dados
-const { PrismaClient } = require('@prisma/client');
+const express = require("express");
+const { PrismaClient } = require("@prisma/client");
+const cors = require("cors");
 
-//Chamada da biblioteca externa CORS
-/*
-CORS (Cross-Origin Resource Sharing) 
-é um mecanismo de segurança dos navegadores
-que controla quem pode acessar sua API.
-*/
-const cors = require('cors');
-
-// Cria uma instância do Express (nosso servidor)
 const app = express();
-// Cria uma instância do Prisma (nosso banco de dados)
 const prisma = new PrismaClient();
 
-// Middlewares - funções que processam as requisições antes de chegar nas rotas
-app.use(express.json()); // Permite receber dados no formato JSON
-app.use(express.urlencoded({extended: true})); // Permite receber dados de formulários HTML
-app.use(express.text()); // Permite receber texto puro
-
-// ATIVA O CORS
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.text());
 app.use(cors());
 
-// Rota POST - Criar aluno
-app.post('/alunos', async (requisicao, resposta) => {
-    try {
-        // Prisma.create() - insere um novo registro no banco de dados
-        // requisicao.body contém os dados enviados pelo cliente
-        const novoAluno = await prisma.aluno.create({
-            data: {
-                email: requisicao.body.email,    // Pega o email do corpo da requisição
-                nome: requisicao.body.nome,      // Pega o nome do corpo da requisição
-                matricula: requisicao.body.matricula // Pega a matrícula do corpo da requisição
-            }
-        });
-        
-        // Envia resposta de sucesso com os dados do aluno criado
-        resposta.json({
-            message: "Cadastrado com sucesso",
-            aluno: novoAluno
-        });
-    } catch (error) {
-        // Se algo der errado, mostra o erro no console
-        console.error(error);
-        // Envia resposta de erro status 500 (erro interno do servidor)
-        resposta.status(500).json({ error: 'Erro ao criar aluno' });
-    }
+/*
+========================================
+ROTA DE TESTE
+========================================
+*/
+app.get("/", (req, res) => {
+  res.json({ message: "API do projeto AIMS funcionando" });
 });
 
-// Rota GET - Listar todos os alunos
-app.get('/alunos', async (requisicao, resposta) => {
-    try {
-        // findMany() - busca TODOS os registros da tabela aluno
-        const todosAlunos = await prisma.aluno.findMany();
-        // Envia a lista de alunos como resposta
-        resposta.json(todosAlunos);
-    } catch (error) {
-        console.error(error);
-        resposta.status(500).json({ error: 'Erro ao buscar alunos' + error });
+/*
+========================================
+LOGIN
+========================================
+*/
+app.post("/login", async (req, res) => {
+  try {
+    const { email, senha } = req.body;
+
+    if (!email || !senha) {
+      return res.status(400).json({
+        error: "Email e senha são obrigatórios",
+      });
     }
+
+    const usuario = await prisma.usuario.findUnique({
+      where: { email },
+    });
+
+    if (!usuario || usuario.senha !== senha) {
+      return res.status(401).json({
+        error: "Email ou senha inválidos",
+      });
+    }
+
+    res.json({
+      message: "Login realizado com sucesso",
+      usuario: {
+        id: usuario.id,
+        email: usuario.email,
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Erro ao realizar login" });
+  }
 });
 
-// Rota GET - Buscar aluno por ID específico
-// :id significa que é um parâmetro na URL (ex: /aluno/1, /aluno/2, etc.)
-app.get('/aluno/:id', async (requisicao, resposta) => {
-    try {
-        // requisicao.params.id - pega o valor do :id na URL
-        // parseInt() - converte o texto para número inteiro
-        const id = parseInt(requisicao.params.id);
-        
-        // findUnique() - busca UM ÚNICO registro que corresponde ao filtro
-        const alunoSelecionado = await prisma.aluno.findUnique({
-            where: { id } // Filtra pelo id (igual a: where: { id: id })
-        });
-        
-        // Se não encontrar o aluno (retornou null)
-        if (!alunoSelecionado) {
-            // status(404) - "Não encontrado"
-            return resposta.status(404).json({ error: 'Aluno não encontrado' });
-        }
-        
-        // Se encontrou, envia os dados do aluno
-        resposta.json(alunoSelecionado);
-    } catch (error) {
-        console.error(error);
-        resposta.status(500).json({ error: 'Erro ao buscar aluno' });
+/*
+========================================
+ROTAS DE MOTOS
+========================================
+*/
+
+// Criar moto
+app.post("/motos", async (req, res) => {
+  try {
+    const { nome, marca, preco, imagem } = req.body;
+
+    if (!nome || !marca || preco === undefined) {
+      return res.status(400).json({
+        error: "Nome, marca e preço são obrigatórios",
+      });
     }
+
+    const novaMoto = await prisma.moto.create({
+      data: {
+        nome,
+        marca,
+        preco: Number(preco),
+        imagem,
+      },
+    });
+
+    res.status(201).json({
+      message: "Moto cadastrada com sucesso",
+      moto: novaMoto,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Erro ao criar moto" });
+  }
 });
 
-// Rota PUT - Atualizar aluno completo
-app.put('/aluno/:id', async (requisicao, resposta) => {
-    try {
-        const id = parseInt(requisicao.params.id);
-        
-        // update() - atualiza um registro existente
-        const alunoAtualizado = await prisma.aluno.update({
-            where: { id }, // Encontra o aluno pelo id
-            data: { // Dados que serão atualizados
-                nome: requisicao.body.nome,
-                email: requisicao.body.email,
-                matricula: requisicao.body.matricula
-            }
-        });
-        
-        resposta.json({
-            message: "Aluno atualizado com sucesso",
-            aluno: alunoAtualizado
-        });
-    } catch (error) {
-        console.error(error);
-        // Código P2025 é erro do Prisma quando o registro não existe
-        if (error.code === 'P2025') {
-            return resposta.status(404).json({ error: 'Aluno não encontrado' });
-        }
-        resposta.status(500).json({ error: 'Erro ao atualizar aluno' });
-    }
+// Listar motos
+app.get("/motos", async (req, res) => {
+  try {
+    const motos = await prisma.moto.findMany();
+    res.json(motos);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Erro ao buscar motos" });
+  }
 });
 
-// Rota DELETE - Deletar aluno
-app.delete('/aluno/:id', async (requisicao, resposta) => {
-    try {
-        const id = parseInt(requisicao.params.id);
-        
-        // delete() - remove um registro do banco de dados
-        await prisma.aluno.delete({
-            where: { id } // Remove o aluno com este id específico
-        });
-        
-        resposta.json({ message: "Aluno deletado com sucesso" });
-    } catch (error) {
-        console.error(error);
-        // Se tentar deletar um aluno que não existe
-        if (error.code === 'P2025') {
-            return resposta.status(404).json({ error: 'Aluno não encontrado' });
-        }
-        resposta.status(500).json({ error: 'Erro ao deletar aluno' });
+// Buscar moto por ID
+app.get("/motos/:id", async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+
+    const moto = await prisma.moto.findUnique({
+      where: { id },
+    });
+
+    if (!moto) {
+      return res.status(404).json({ error: "Moto não encontrada" });
     }
+
+    res.json(moto);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Erro ao buscar moto" });
+  }
 });
 
-// Função para fechar a conexão com o banco de dados de forma segura
+// Atualizar moto
+app.put("/motos/:id", async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const { nome, marca, preco, imagem } = req.body;
+
+    const motoAtualizada = await prisma.moto.update({
+      where: { id },
+      data: {
+        nome,
+        marca,
+        preco: preco !== undefined ? Number(preco) : undefined,
+        imagem,
+      },
+    });
+
+    res.json({
+      message: "Moto atualizada com sucesso",
+      moto: motoAtualizada,
+    });
+  } catch (error) {
+    console.error(error);
+
+    if (error.code === "P2025") {
+      return res.status(404).json({ error: "Moto não encontrada" });
+    }
+
+    res.status(500).json({ error: "Erro ao atualizar moto" });
+  }
+});
+
+// Deletar moto
+app.delete("/motos/:id", async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+
+    await prisma.moto.delete({
+      where: { id },
+    });
+
+    res.json({ message: "Moto deletada com sucesso" });
+  } catch (error) {
+    console.error(error);
+
+    if (error.code === "P2025") {
+      return res.status(404).json({ error: "Moto não encontrada" });
+    }
+
+    res.status(500).json({ error: "Erro ao deletar moto" });
+  }
+});
+
+/*
+========================================
+ROTAS DE USUÁRIOS
+========================================
+*/
+
+// Criar usuário
+app.post("/usuarios", async (req, res) => {
+  try {
+    const { email, senha } = req.body;
+
+    if (!email || !senha) {
+      return res.status(400).json({
+        error: "Email e senha são obrigatórios",
+      });
+    }
+
+    const novoUsuario = await prisma.usuario.create({
+      data: {
+        email,
+        senha,
+      },
+    });
+
+    res.status(201).json({
+      message: "Usuário criado com sucesso",
+      usuario: novoUsuario,
+    });
+  } catch (error) {
+    console.error(error);
+
+    if (error.code === "P2002") {
+      return res.status(400).json({ error: "Email já cadastrado" });
+    }
+
+    res.status(500).json({ error: "Erro ao criar usuário" });
+  }
+});
+
+// Listar usuários
+app.get("/usuarios", async (req, res) => {
+  try {
+    const usuarios = await prisma.usuario.findMany();
+    res.json(usuarios);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Erro ao buscar usuários" });
+  }
+});
+
+/*
+========================================
+ROTAS DE COMPRAS
+========================================
+*/
+
+// Criar compra
+app.post("/compras", async (req, res) => {
+  try {
+    const { usuarioId, motoId, formaPagamento } = req.body;
+
+    if (!usuarioId || !motoId || !formaPagamento) {
+      return res.status(400).json({
+        error: "usuarioId, motoId e formaPagamento são obrigatórios",
+      });
+    }
+
+    const compra = await prisma.compra.create({
+      data: {
+        usuarioId: Number(usuarioId),
+        motoId: Number(motoId),
+        formaPagamento,
+      },
+    });
+
+    res.status(201).json({
+      message: "Compra registrada com sucesso",
+      compra,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Erro ao registrar compra" });
+  }
+});
+
+// Listar compras
+app.get("/compras", async (req, res) => {
+  try {
+    const compras = await prisma.compra.findMany({
+      include: {
+        usuario: true,
+        moto: true,
+      },
+    });
+
+    res.json(compras);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Erro ao buscar compras" });
+  }
+});
+
+// Buscar compra por ID
+app.get("/compras/:id", async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+
+    const compra = await prisma.compra.findUnique({
+      where: { id },
+      include: {
+        usuario: true,
+        moto: true,
+      },
+    });
+
+    if (!compra) {
+      return res.status(404).json({ error: "Compra não encontrada" });
+    }
+
+    res.json(compra);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Erro ao buscar compra" });
+  }
+});
+
+/*
+========================================
+ENCERRAMENTO SEGURO
+========================================
+*/
 const gracefulShutdown = async () => {
-    // $disconnect() - método do Prisma para fechar a conexão com o banco
-    await prisma.$disconnect();
-    process.exit(0); // Encerra o processo com sucesso (código 0)
+  await prisma.$disconnect();
+  process.exit(0);
 };
 
-// Event listeners - capturam sinais de encerramento do sistema
-// SIGINT: quando pressiona Ctrl+C no terminal
-// SIGTERM: quando o sistema pede para o programa encerrar
-process.on('SIGINT', gracefulShutdown);
-process.on('SIGTERM', gracefulShutdown);
+process.on("SIGINT", gracefulShutdown);
+process.on("SIGTERM", gracefulShutdown);
 
-// Inicia o servidor na porta 3000
-// listen() - faz o servidor "ouvir" e aguardar requisições
 app.listen(3000, () => {
-    console.log('Servidor rodando na porta 3000');
+  console.log("Servidor rodando na porta 3000");
 });
-

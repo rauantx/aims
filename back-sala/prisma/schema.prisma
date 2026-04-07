@@ -1,22 +1,49 @@
-// Gerador do Prisma Client
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "windows"]
 }
 
-// Fonte de dados (MariaDB)
 datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
-// Modelo da tabela Aluno
-model Aluno {
-  id            Int      @id @default(autoincrement()) // Chave primária
-  email         String   @unique                       // Email único
-  nome          String                                 // Nome do aluno
-  matricula     String   @unique                       // Matrícula única
-  criadoEm      DateTime @default(now())               // Data de criação
-  atualizadoEm  DateTime @updatedAt                    // Atualização automática
+model Usuario {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  senha        String
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
 
-  @@map("alunos") // Nome real da tabela no banco
+  compras      Compra[]
+
+  @@map("usuarios")
+}
+
+model Moto {
+  id           Int      @id @default(autoincrement())
+  nome         String
+  marca        String
+  preco        Float
+  imagem       String?
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  compras      Compra[]
+
+  @@map("motos")
+}
+
+model Compra {
+  id             Int      @id @default(autoincrement())
+  formaPagamento String
+  criadoEm       DateTime @default(now())
+
+  usuarioId      Int
+  motoId         Int
+
+  usuario        Usuario  @relation(fields: [usuarioId], references: [id])
+  moto           Moto     @relation(fields: [motoId], references: [id])
+
+  @@map("compras")
 }

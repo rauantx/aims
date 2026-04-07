@@ -1,47 +1,913 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>login</title>
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Império Motos - Sua próxima moto está aqui</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
 
-    <link rel="stylesheet" href="css/style.css">
+      :root {
+        --bg: #0b1220;
+        --bg-soft: #111827;
+        --card: #ffffff;
+        --text: #111827;
+        --muted: #6b7280;
+        --border: #e5e7eb;
+        --primary: #dc2626;
+        --primary-dark: #b91c1c;
+        --success-bg: #dcfce7;
+        --success-text: #166534;
+        --error-bg: #fee2e2;
+        --error-text: #991b1b;
+        --info-bg: #dbeafe;
+        --info-text: #1d4ed8;
+        --shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+      }
 
-</head>
-<body>
+      body {
+        margin: 0;
+        font-family: Arial, Helvetica, sans-serif;
+        background:
+          radial-gradient(
+            circle at top,
+            rgba(220, 38, 38, 0.12),
+            transparent 25%
+          ),
+          linear-gradient(180deg, #f3f4f6 0%, #eef2f7 100%);
+        color: var(--text);
+      }
 
-    <section>
-        <img class="imagem_"
-            src="media/img/teclado-imagem.jpg" 
-            alt="" 
-        >
-    </section>
+      .hero {
+        background: linear-gradient(
+          135deg,
+          #0f172a 0%,
+          #111827 55%,
+          #7f1d1d 100%
+        );
+        color: white;
+        padding: 56px 24px 44px;
+        box-shadow: var(--shadow);
+      }
 
-    <section>
+      .hero-inner {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: 1.2fr 0.8fr;
+        gap: 28px;
+        align-items: center;
+      }
 
-        <form>
-            <div>
-                <img 
-                    src="media/logo.svg"
-                    alt=""
-                >
-                <p class="titulo">
-                    Acesse sua conta
-                </p>
+      .hero-badge {
+        display: inline-block;
+        padding: 8px 14px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.1);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        margin-bottom: 16px;
+      }
 
-                <a href=""
-                    class="icon_container">
-                    <img 
-                        class="icon_logo"
-                        src="media/github-icon.svg" alt="">
-                </a>
+      .hero h1 {
+        margin: 0 0 12px;
+        font-size: 42px;
+        line-height: 1.08;
+      }
+
+      .hero p {
+        margin: 0;
+        color: rgba(255, 255, 255, 0.82);
+        font-size: 16px;
+        line-height: 1.6;
+        max-width: 680px;
+      }
+
+      .hero-panel {
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        padding: 22px;
+        backdrop-filter: blur(4px);
+      }
+
+      .hero-panel h3 {
+        margin: 0 0 10px;
+        font-size: 18px;
+      }
+
+      .hero-list {
+        margin: 0;
+        padding-left: 18px;
+        color: rgba(255, 255, 255, 0.84);
+        line-height: 1.8;
+        font-size: 14px;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 28px 24px 40px;
+      }
+
+      .card {
+        background: var(--card);
+        border-radius: 20px;
+        padding: 22px;
+        box-shadow: var(--shadow);
+        margin-bottom: 22px;
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      .login-card {
+        max-width: 480px;
+        margin: -48px auto 0;
+        position: relative;
+        z-index: 2;
+      }
+
+      .section-title {
+        margin: 0 0 6px;
+        font-size: 28px;
+      }
+
+      .section-subtitle {
+        margin: 0 0 20px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+        gap: 18px;
+      }
+
+      .moto-card {
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        overflow: hidden;
+        background: #fff;
+        transition:
+          transform 0.18s ease,
+          box-shadow 0.18s ease,
+          border-color 0.18s ease;
+      }
+
+      .moto-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 14px 28px rgba(0, 0, 0, 0.08);
+      }
+
+      .moto-card.selected {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.12);
+      }
+
+      .moto-img {
+        width: 100%;
+        height: 210px;
+        object-fit: cover;
+        background: #e5e7eb;
+        display: block;
+      }
+
+      .moto-body {
+        padding: 16px;
+      }
+
+      .moto-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+
+      .pill {
+        display: inline-block;
+        padding: 7px 12px;
+        border-radius: 999px;
+        background: #fee2e2;
+        color: #b91c1c;
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .moto-title {
+        margin: 0 0 8px;
+        font-size: 20px;
+      }
+
+      .moto-desc {
+        color: var(--muted);
+        font-size: 14px;
+        margin: 0 0 12px;
+        line-height: 1.5;
+        min-height: 42px;
+      }
+
+      .price {
+        font-size: 24px;
+        font-weight: 800;
+        margin: 0 0 14px;
+        color: #111827;
+      }
+
+      .toolbar,
+      .topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      .toolbar-left {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .toolbar-right {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .row {
+        display: grid;
+        gap: 14px;
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .row-1 {
+        display: grid;
+        gap: 14px;
+        grid-template-columns: 1fr;
+      }
+
+      label {
+        font-size: 14px;
+        font-weight: 700;
+        display: block;
+        margin-bottom: 6px;
+      }
+
+      input,
+      select,
+      button {
+        width: 100%;
+        padding: 13px 14px;
+        border-radius: 12px;
+        border: 1px solid #d1d5db;
+        font-size: 14px;
+      }
+
+      input,
+      select {
+        background: #fff;
+      }
+
+      input:focus,
+      select:focus {
+        outline: 2px solid rgba(220, 38, 38, 0.15);
+        border-color: var(--primary);
+      }
+
+      button {
+        cursor: pointer;
+        border: none;
+        font-weight: 700;
+        background: var(--primary);
+        color: white;
+        transition:
+          transform 0.16s ease,
+          opacity 0.16s ease,
+          background 0.16s ease;
+      }
+
+      button:hover {
+        background: var(--primary-dark);
+      }
+
+      button:active {
+        transform: scale(0.99);
+      }
+
+      button:disabled {
+        cursor: not-allowed;
+        opacity: 0.55;
+      }
+
+      button.secondary {
+        background: #1f2937;
+      }
+
+      button.secondary:hover {
+        background: #111827;
+      }
+
+      .status {
+        padding: 12px;
+        border-radius: 12px;
+        margin-top: 14px;
+        font-size: 14px;
+      }
+
+      .success {
+        background: var(--success-bg);
+        color: var(--success-text);
+      }
+
+      .error {
+        background: var(--error-bg);
+        color: var(--error-text);
+      }
+
+      .info {
+        background: var(--info-bg);
+        color: var(--info-text);
+      }
+
+      .muted {
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .selected-box {
+        margin-top: 16px;
+        padding: 16px;
+        border-radius: 16px;
+        background: linear-gradient(180deg, #fff, #f9fafb);
+        border: 1px solid var(--border);
+      }
+
+      .selected-title {
+        font-size: 13px;
+        color: var(--muted);
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+
+      .selected-name {
+        font-size: 20px;
+        font-weight: 800;
+        margin-bottom: 4px;
+      }
+
+      .selected-price {
+        font-size: 15px;
+        color: #111827;
+        font-weight: 700;
+      }
+
+      .summary-grid {
+        display: grid;
+        grid-template-columns: 1fr 340px;
+        gap: 22px;
+      }
+
+      .checkout-card {
+        position: sticky;
+        top: 20px;
+        height: fit-content;
+      }
+
+      .checkout-highlight {
+        padding: 14px 16px;
+        background: #111827;
+        color: white;
+        border-radius: 14px;
+        margin-bottom: 16px;
+      }
+
+      .checkout-highlight strong {
+        display: block;
+        font-size: 22px;
+        margin-top: 4px;
+      }
+
+      .mini-note {
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 10px;
+        line-height: 1.5;
+      }
+
+      @media (max-width: 900px) {
+        .hero-inner,
+        .summary-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .login-card {
+          margin-top: -30px;
+        }
+      }
+
+      @media (max-width: 700px) {
+        .row {
+          grid-template-columns: 1fr;
+        }
+
+        .hero h1 {
+          font-size: 32px;
+        }
+
+        .container {
+          padding: 20px 16px 30px;
+        }
+
+        .hero {
+          padding: 42px 16px 34px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="hero">
+      <div class="hero-inner">
+        <div>
+          <div class="hero-badge">IMPÉRIO MOTOS • SHOWROOM DIGITAL</div>
+          <h1>
+            Escolha sua próxima moto com mais segurança, estilo e praticidade.
+          </h1>
+          <p>
+            Explore modelos populares, compare valores, faça login e finalize
+            sua compra em um fluxo simples, rápido e integrado ao nosso sistema.
+          </p>
+        </div>
+        <div class="hero-panel">
+          <h3>Por que comprar na Império Motos?</h3>
+          <ul class="hero-list">
+            <li>Modelos populares e urbanos em destaque</li>
+            <li>Processo de compra rápido e direto</li>
+            <li>Seleção com visual claro e objetivo</li>
+            <li>Pagamento com Pix, Cartão, Boleto ou Financiamento</li>
+          </ul>
+        </div>
+      </div>
+    </header>
+
+    <main class="container">
+      <section id="loginSection" class="card login-card">
+        <h2 class="section-title">Entrar na sua conta</h2>
+        <p class="section-subtitle">
+          Faça login para acessar o catálogo e registrar sua compra.
+        </p>
+
+        <div class="row-1">
+          <div>
+            <label for="email">E-mail</label>
+            <input id="email" type="email" placeholder="teste@gmail.com" />
+          </div>
+          <div>
+            <label for="senha">Senha</label>
+            <input id="senha" type="password" placeholder="123456" />
+          </div>
+          <div>
+            <button id="btnLogin">Acessar showroom</button>
+          </div>
+        </div>
+
+        <div id="loginStatus"></div>
+      </section>
+
+      <section id="lojaSection" class="hidden">
+        <div class="card topbar">
+          <div class="toolbar-left">
+            <h2 class="section-title" style="margin-bottom: 0">
+              Catálogo Império Motos
+            </h2>
+            <div id="usuarioLogado" class="muted">Usuário não identificado</div>
+          </div>
+          <div class="toolbar-right">
+            <button class="secondary" id="btnRecarregar">
+              Atualizar catálogo
+            </button>
+            <button id="btnLogout">Sair</button>
+          </div>
+        </div>
+
+        <div class="summary-grid">
+          <div>
+            <div class="card">
+              <div class="toolbar">
+                <div class="toolbar-left">
+                  <h3 style="margin: 0">Motos disponíveis</h3>
+                  <div class="muted">
+                    Modelos em destaque: Honda CG 160 Titan, Honda XRE, Pop 110i
+                    ES, Shineray JET 125 SS e Avelloz AZ125 Alfa.
+                  </div>
+                </div>
+              </div>
+
+              <div
+                id="motosContainer"
+                class="grid"
+                style="margin-top: 18px"
+              ></div>
+            </div>
+          </div>
+
+          <aside class="card checkout-card">
+            <div class="checkout-highlight">
+              Melhor experiência para compra rápida
+              <strong>Finalize sua moto em poucos passos</strong>
             </div>
 
-            <button type="button" onclick="entrarNoSistema()">Entrar</button>
-        </form>
-    </section>
+            <h3 style="margin-bottom: 8px">Resumo da sua escolha</h3>
+            <p class="muted" style="margin-top: 0">
+              Selecione uma moto no catálogo e escolha a forma de pagamento.
+            </p>
 
-    <script src="./js/script.js"></script>
+            <div class="selected-box">
+              <div class="selected-title">Moto selecionada</div>
+              <div id="selectedMotoName" class="selected-name">
+                Nenhuma moto selecionada
+              </div>
+              <div id="selectedMotoPrice" class="selected-price"></div>
+            </div>
 
-</body>
+            <div style="margin-top: 16px">
+              <label for="motoId">ID da moto</label>
+              <input
+                id="motoId"
+                type="number"
+                placeholder="Selecione no catálogo"
+                readonly
+              />
+            </div>
+
+            <div style="margin-top: 14px">
+              <label for="formaPagamento">Forma de pagamento</label>
+              <select id="formaPagamento">
+                <option value="">Selecione</option>
+                <option value="pix">Pix</option>
+                <option value="cartao">Cartão</option>
+                <option value="boleto">Boleto</option>
+                <option value="financiamento">Financiamento</option>
+              </select>
+            </div>
+
+            <div style="margin-top: 16px">
+              <button id="btnComprar">Finalizar compra</button>
+            </div>
+
+            <div class="mini-note">
+              Ao finalizar, o pedido será registrado no back-end com os dados da
+              moto, do usuário logado e do método de pagamento.
+            </div>
+
+            <div id="compraStatus"></div>
+          </aside>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const API_BASE = "http://localhost:3000";
+
+      const catalogoBase = [
+        {
+          nome: "Honda CG 160 Titan",
+          marca: "Honda",
+          preco: 18990,
+          imagem: "./img/foto890_47013.png",
+          descricao:
+            "Street versátil, econômica e ideal para mobilidade urbana.",
+        },
+        {
+          nome: "Honda XRE",
+          marca: "Honda",
+          preco: 22990,
+          imagem: "./img/xre.webp",
+          descricao:
+            "Trail robusta para quem busca presença, conforto e desempenho.",
+        },
+        {
+          nome: "Pop 110i ES",
+          marca: "Honda",
+          preco: 10990,
+          imagem:
+            "https://www.honda.com.br/motos/sites/hda/files/2024-06/imagem-home-moto-pop-110i-es-branco-ross-white-lateral_1.webp",
+          descricao:
+            "Praticidade, economia e manutenção simples para o dia a dia.",
+        },
+        {
+          nome: "Shineray JET 125 SS",
+          marca: "Shineray",
+          preco: 11490,
+          imagem:
+            "https://www.shineray.com.br/wp-content/uploads/2026/02/Cor-JET-125-1.webp",
+          descricao:
+            "Modelo urbano com visual moderno e excelente custo-benefício.",
+        },
+        {
+          nome: "Avelloz AZ125 Alfa",
+          marca: "Avelloz",
+          preco: 12990,
+          imagem:
+            "https://image.webmotors.com.br/_fotos/anunciousados/gigante/2025/202511/20251115/avellozaz_125_alfawmimagem17375584249.jpg",
+          descricao:
+            "Opção acessível com estilo marcante e boa proposta urbana.",
+        },
+      ];
+
+      const loginSection = document.getElementById("loginSection");
+      const lojaSection = document.getElementById("lojaSection");
+      const loginStatus = document.getElementById("loginStatus");
+      const compraStatus = document.getElementById("compraStatus");
+      const usuarioLogado = document.getElementById("usuarioLogado");
+      const motosContainer = document.getElementById("motosContainer");
+      const motoIdInput = document.getElementById("motoId");
+      const formaPagamentoSelect = document.getElementById("formaPagamento");
+      const btnComprar = document.getElementById("btnComprar");
+      const selectedMotoName = document.getElementById("selectedMotoName");
+      const selectedMotoPrice = document.getElementById("selectedMotoPrice");
+
+      let usuarioAtual = null;
+      let motosRenderizadas = [];
+
+      function setStatus(el, message, type = "info") {
+        el.innerHTML = `<div class="status ${type}">${message}</div>`;
+      }
+
+      function clearStatus(el) {
+        el.innerHTML = "";
+      }
+
+      function formatPrice(value) {
+        return Number(value).toLocaleString("pt-BR", {
+          style: "currency",
+          currency: "BRL",
+        });
+      }
+
+      function atualizarEstadoCompra() {
+        const podeComprar =
+          Boolean(usuarioAtual?.id) &&
+          Boolean(Number(motoIdInput.value)) &&
+          Boolean(formaPagamentoSelect.value);
+
+        btnComprar.disabled = !podeComprar;
+      }
+
+      function obterReferenciaMoto(nomeMotoOriginal) {
+        const nomeMoto = String(nomeMotoOriginal || "")
+          .trim()
+          .toLowerCase();
+
+        return catalogoBase.find((item) => {
+          const nomeCatalogo = item.nome.trim().toLowerCase();
+
+          return (
+            nomeCatalogo === nomeMoto ||
+            nomeCatalogo.includes(nomeMoto) ||
+            nomeMoto.includes(nomeCatalogo) ||
+            (nomeCatalogo.includes("xre") && nomeMoto.includes("xre")) ||
+            (nomeCatalogo.includes("cg 160") && nomeMoto.includes("cg 160")) ||
+            (nomeCatalogo.includes("pop 110") &&
+              nomeMoto.includes("pop 110")) ||
+            (nomeCatalogo.includes("jet 125") &&
+              nomeMoto.includes("jet 125")) ||
+            (nomeCatalogo.includes("az125") && nomeMoto.includes("az125"))
+          );
+        });
+      }
+
+      function renderizarMotos(motos) {
+        motosRenderizadas = motos;
+
+        if (!Array.isArray(motos) || motos.length === 0) {
+          motosContainer.innerHTML =
+            '<p class="muted">Nenhuma moto cadastrada.</p>';
+          return;
+        }
+
+        motosContainer.innerHTML = motos
+          .map((moto) => {
+            const referencia = obterReferenciaMoto(moto.nome);
+
+            return `
+              <div class="moto-card ${Number(motoIdInput.value) === Number(moto.id) ? "selected" : ""}">
+                <img
+                  class="moto-img"
+                  src="${moto.imagem || "https://via.placeholder.com/600x400?text=Moto"}"
+                  alt="${moto.nome}"
+                  onerror="this.src='https://via.placeholder.com/600x400?text=Moto'"
+                />
+                <div class="moto-body">
+                  <div class="moto-top">
+                    <span class="pill">${moto.marca}</span>
+                  </div>
+                  <h3 class="moto-title">${moto.nome}</h3>
+                  <p class="moto-desc">${referencia?.descricao || "Moto disponível em nosso catálogo para compra imediata."}</p>
+                  <div class="price">${formatPrice(moto.preco)}</div>
+                  <button onclick="selecionarMoto(${moto.id})">Selecionar esta moto</button>
+                </div>
+              </div>
+            `;
+          })
+          .join("");
+      }
+
+      async function login() {
+        clearStatus(loginStatus);
+        const email = document.getElementById("email").value.trim();
+        const senha = document.getElementById("senha").value.trim();
+
+        if (!email || !senha) {
+          setStatus(loginStatus, "Preencha e-mail e senha.", "error");
+          return;
+        }
+
+        try {
+          const response = await fetch(`${API_BASE}/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, senha }),
+          });
+
+          const data = await response.json();
+
+          if (!response.ok) {
+            setStatus(loginStatus, data.error || "Erro no login.", "error");
+            return;
+          }
+
+          usuarioAtual = data.usuario;
+          usuarioLogado.textContent = `Cliente logado: ${usuarioAtual.email} • ID ${usuarioAtual.id}`;
+          loginSection.classList.add("hidden");
+          lojaSection.classList.remove("hidden");
+          await carregarMotos();
+          atualizarEstadoCompra();
+        } catch (error) {
+          setStatus(
+            loginStatus,
+            "Não foi possível conectar ao back-end. Verifique se a API está rodando na porta 3000.",
+            "error",
+          );
+        }
+      }
+
+      async function carregarMotos() {
+        motosContainer.innerHTML =
+          '<p class="muted">Carregando catálogo...</p>';
+
+        try {
+          const response = await fetch(`${API_BASE}/motos`);
+          const motosApi = await response.json();
+
+          const motos =
+            Array.isArray(motosApi) && motosApi.length > 0
+              ? motosApi.map((moto) => {
+                  const referencia = obterReferenciaMoto(moto.nome);
+
+                  return {
+                    ...moto,
+                    imagem:
+                      referencia?.imagem ||
+                      moto.imagem ||
+                      "https://via.placeholder.com/600x400?text=Moto",
+                  };
+                })
+              : catalogoBase.map((moto, index) => ({
+                  ...moto,
+                  id: index + 1,
+                }));
+
+          renderizarMotos(motos);
+        } catch (error) {
+          const motos = catalogoBase.map((moto, index) => ({
+            ...moto,
+            id: index + 1,
+          }));
+
+          renderizarMotos(motos);
+        }
+      }
+
+      window.selecionarMoto = function (id) {
+        motoIdInput.value = id;
+
+        const motoSelecionada = motosRenderizadas.find(
+          (moto) => Number(moto.id) === Number(id),
+        );
+
+        selectedMotoName.textContent = motoSelecionada?.nome || `Moto ID ${id}`;
+        selectedMotoPrice.textContent = motoSelecionada
+          ? formatPrice(motoSelecionada.preco)
+          : "";
+
+        renderizarMotos(motosRenderizadas);
+
+        setStatus(
+          compraStatus,
+          `Moto selecionada com sucesso. Agora escolha a forma de pagamento para concluir a compra.`,
+          "info",
+        );
+        atualizarEstadoCompra();
+      };
+
+      async function comprar() {
+        clearStatus(compraStatus);
+
+        const usuarioId = usuarioAtual?.id;
+        const motoId = Number(motoIdInput.value);
+        const formaPagamento = formaPagamentoSelect.value;
+
+        if (!usuarioId) {
+          setStatus(compraStatus, "Usuário não identificado.", "error");
+          return;
+        }
+
+        if (!motoId || !formaPagamento) {
+          setStatus(
+            compraStatus,
+            "Selecione a moto e a forma de pagamento.",
+            "error",
+          );
+          return;
+        }
+
+        try {
+          btnComprar.disabled = true;
+          btnComprar.textContent = "Processando compra...";
+
+          const response = await fetch(`${API_BASE}/compras`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ usuarioId, motoId, formaPagamento }),
+          });
+
+          const data = await response.json();
+
+          if (!response.ok) {
+            setStatus(
+              compraStatus,
+              data.error || "Erro ao registrar compra.",
+              "error",
+            );
+            return;
+          }
+
+          setStatus(
+            compraStatus,
+            `Compra confirmada com sucesso. ID do pedido: ${data.compra?.id ?? "não informado"}.`,
+            "success",
+          );
+
+          formaPagamentoSelect.value = "";
+          motoIdInput.value = "";
+          selectedMotoName.textContent = "Nenhuma moto selecionada";
+          selectedMotoPrice.textContent = "";
+          renderizarMotos(motosRenderizadas);
+        } catch (error) {
+          setStatus(
+            compraStatus,
+            "Falha ao conectar com a API para registrar a compra.",
+            "error",
+          );
+        } finally {
+          btnComprar.textContent = "Finalizar compra";
+          atualizarEstadoCompra();
+        }
+      }
+
+      function logout() {
+        usuarioAtual = null;
+        loginSection.classList.remove("hidden");
+        lojaSection.classList.add("hidden");
+        document.getElementById("email").value = "";
+        document.getElementById("senha").value = "";
+        motoIdInput.value = "";
+        formaPagamentoSelect.value = "";
+        motosContainer.innerHTML = "";
+        selectedMotoName.textContent = "Nenhuma moto selecionada";
+        selectedMotoPrice.textContent = "";
+        clearStatus(loginStatus);
+        clearStatus(compraStatus);
+        atualizarEstadoCompra();
+      }
+
+      document.getElementById("btnLogin").addEventListener("click", login);
+      document.getElementById("btnComprar").addEventListener("click", comprar);
+      document.getElementById("btnLogout").addEventListener("click", logout);
+      document
+        .getElementById("btnRecarregar")
+        .addEventListener("click", carregarMotos);
+      formaPagamentoSelect.addEventListener("change", atualizarEstadoCompra);
+
+      atualizarEstadoCompra();
+    </script>
+  </body>
 </html>
